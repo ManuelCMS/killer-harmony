@@ -35,7 +35,7 @@ Antes de ejecutar el script de instalación, necesitas contar con lo siguiente:
 ## ℹ️ Información sobre las Versiones
 
 * **Versión v0.1**:
-  * Es la versión base que ya fue probada y jugada completamente en una serie de gameplays en YouTube: [Enlace a la serie de videos de YouTube](LINK_AQUI).
+  * Es la versión base que ya fue probada y jugada completamente en una serie de gameplays en YouTube en [mi canal](https://www.youtube.com/@killerkoiking).
 * **Versiones más recientes (v1.0 y posteriores)**:
   * Incluyen revisiones ortográficas, mejoras en el formateo de texto, fuentes y correcciones de estilo.
   * *Nota*: Estas versiones no han sido probadas exhaustivamente de principio a fin, por lo que si encuentras algún detalle visual o error tipográfico, puedes reportarlo.
@@ -45,4 +45,4 @@ Antes de ejecutar el script de instalación, necesitas contar con lo siguiente:
 ## 🛠️ Créditos y Agradecimientos
 
 * Herramientas de extracción y empaquetado: [Harmony Tools](https://github.com/redssu/Harmony-Tools) por **redssu**.
-* Proyecto y traducción al español por la comunidad.
+* Proyecto y traducción hecha por mi cuenta, con ayuda de @blackhawk42 para trabajar con algunos archivos de texto.
