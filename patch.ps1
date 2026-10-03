@@ -112,14 +112,14 @@ Write-Host ""
 
 # Seleccion de version del parche
 Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
-Write-Host "¿Deseas instalar la version mas reciente (v1.0)? [S/N]" -ForegroundColor Yellow
-Write-Host "  [S] Instalar version mas reciente (v1.0) - Sin probar" -ForegroundColor DarkGray
-Write-Host "  [N] Instalar version anterior (v0.1) - Estable con errores" -ForegroundColor DarkGray
+Write-Host "¿Deseas instalar la version mas reciente (v1.1)? [S/N]" -ForegroundColor Yellow
+Write-Host "  [S] Instalar version mas reciente (v1.1) - Sin probar" -ForegroundColor DarkGray
+Write-Host "  [N] Instalar version anterior (v0.1) - Estable con errores de texto" -ForegroundColor DarkGray
 Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
 $verInput = Read-Host "Opcion (Por defecto: S)"
 
 if ([string]::IsNullOrWhiteSpace($verInput) -or $verInput -match "^[sSyY]") {
-    $versionSeleccionada = "v1.0"
+    $versionSeleccionada = "v1.1"
 } else {
     $versionSeleccionada = "v0.1"
 }
