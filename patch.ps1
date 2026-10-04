@@ -143,14 +143,21 @@ foreach ($cpk in $cpkFiles) {
     }
 }
 
+$parche_previo_instalado = $false
+
 if ($missingCpk.Count -gt 0) {
     Write-Host "[ADVERTENCIA] No se encontraron los siguientes archivos CPK:" -ForegroundColor Yellow
     foreach ($cpk in $missingCpk) {
         Write-Host "  - $cpk" -ForegroundColor Red
     }
-    Write-Host "¿Deseas continuar de todas formas si ya fueron extraidos? (S/N): " -NoNewline -ForegroundColor Yellow
-    $resp = Read-Host
-    if ($resp -notmatch "^[sSyY]") {
+    Write-Host ""
+    Write-Host "Esto puede deberse a que ya tienes un parche anterior instalado y los CPK ya fueron extraidos y eliminados." -ForegroundColor Cyan
+    Write-Host "¿Ya tienes un parche previo instalado? Se omitira la extraccion y se aplicaran solo los archivos del parche. [S/N] (Por defecto: S): " -NoNewline -ForegroundColor Yellow
+    $respPrevio = Read-Host
+    if ([string]::IsNullOrWhiteSpace($respPrevio) -or $respPrevio -match "^[sSyY]") {
+        $parche_previo_instalado = $true
+        Write-Host "[+] Se omitira la extraccion de CPK. Solo se copiaran los archivos del parche." -ForegroundColor Green
+    } else {
         Write-Host "Operacion cancelada por el usuario." -ForegroundColor Gray
         exit 0
     }
@@ -159,7 +166,7 @@ if ($missingCpk.Count -gt 0) {
 # -------------------------------------------------------------------------
 # Control de ejecucion de extraccion
 # -------------------------------------------------------------------------
-$ejecutarExtraccion = $true # Habilitado para prueba completa
+$ejecutarExtraccion = -not $parche_previo_instalado
 
 if ($ejecutarExtraccion) {
     # Confirmacion antes de extraer
@@ -207,58 +214,63 @@ if ($ejecutarExtraccion) {
     Write-Host "[INFO] Extraccion de archivos CPK omitida (modo pruebas activo)." -ForegroundColor DarkGray
 }
 
-Write-Host ""
-Write-Host "Moviendo contenidos extraidos a la carpeta 'win'..." -ForegroundColor Cyan
+if ($parche_previo_instalado) {
+    Write-Host ""
+    Write-Host "[INFO] Extraccion y fusion de CPK omitidas (parche previo detectado)." -ForegroundColor DarkGray
+} else {
+    # Mover y fusionar los contenidos de las carpetas extraidas a data/win
+    # HarmonyTools extrae creando carpetas con nombres como: "<nombre>.cpk.decompressed" o "<nombre>"
+    Write-Host ""
+    Write-Host "Moviendo contenidos extraidos a la carpeta 'win'..." -ForegroundColor Cyan
 
-# Mover y fusionar los contenidos de las carpetas extraidas a data/win
-# HarmonyTools extrae creando carpetas con nombres como: "<nombre>.cpk.decompressed" o "<nombre>"
-foreach ($cpk in $cpkFiles) {
-    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($cpk)
-    
-    # Lista de posibles nombres de carpetas de extraccion
-    $posiblesCarpetas = @(
-        "$cpk.decompressed",
-        "$baseName.decompressed",
-        $baseName
-    )
+    foreach ($cpk in $cpkFiles) {
+        $baseName = [System.IO.Path]::GetFileNameWithoutExtension($cpk)
+        
+        # Lista de posibles nombres de carpetas de extraccion
+        $posiblesCarpetas = @(
+            "$cpk.decompressed",
+            "$baseName.decompressed",
+            $baseName
+        )
 
-    foreach ($folderName in $posiblesCarpetas) {
-        $extractedFolder = Join-Path $winDir $folderName
+        foreach ($folderName in $posiblesCarpetas) {
+            $extractedFolder = Join-Path $winDir $folderName
 
-        if (Test-Path $extractedFolder) {
-            Write-Host "Moviendo archivos de '$folderName' a 'win'..." -ForegroundColor Gray
-            
-            # Recorrer todos los elementos de la carpeta extraida
-            Get-ChildItem -Path $extractedFolder -Force | ForEach-Object {
-                $targetPath = Join-Path $winDir $_.Name
-                if ($_.PSIsContainer) {
-                    # Si el subdirectorio no existe en win, crearlo
-                    if (-not (Test-Path $targetPath)) {
-                        New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+            if (Test-Path $extractedFolder) {
+                Write-Host "Moviendo archivos de '$folderName' a 'win'..." -ForegroundColor Gray
+                
+                # Recorrer todos los elementos de la carpeta extraida
+                Get-ChildItem -Path $extractedFolder -Force | ForEach-Object {
+                    $targetPath = Join-Path $winDir $_.Name
+                    if ($_.PSIsContainer) {
+                        # Si el subdirectorio no existe en win, crearlo
+                        if (-not (Test-Path $targetPath)) {
+                            New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+                        }
+                        # Copiar todo el contenido recursivamente dentro del subdirectorio en win
+                        Copy-Item -Path (Join-Path $_.FullName "*") -Destination $targetPath -Recurse -Force
+                        # Borrar el subdirectorio de origen
+                        Remove-Item -Path $_.FullName -Recurse -Force
+                    } else {
+                        # Si es un archivo, moverlo directamente sobrescribiendo si existe
+                        Move-Item -Path $_.FullName -Destination $targetPath -Force
                     }
-                    # Copiar todo el contenido recursivamente dentro del subdirectorio en win
-                    Copy-Item -Path (Join-Path $_.FullName "*") -Destination $targetPath -Recurse -Force
-                    # Borrar el subdirectorio de origen
-                    Remove-Item -Path $_.FullName -Recurse -Force
-                } else {
-                    # Si es un archivo, moverlo directamente sobrescribiendo si existe
-                    Move-Item -Path $_.FullName -Destination $targetPath -Force
                 }
-            }
 
-            # Eliminar la carpeta extraida que ahora quedo vacia
-            try {
-                Remove-Item -Path $extractedFolder -Recurse -Force -ErrorAction Stop
-                Write-Host "[+] Carpeta '$folderName' eliminada correctamente." -ForegroundColor Green
-            } catch {
-                Write-Host "[!] Advertencia: No se pudo eliminar la carpeta '$folderName': $_" -ForegroundColor Yellow
+                # Eliminar la carpeta extraida que ahora quedo vacia
+                try {
+                    Remove-Item -Path $extractedFolder -Recurse -Force -ErrorAction Stop
+                    Write-Host "[+] Carpeta '$folderName' eliminada correctamente." -ForegroundColor Green
+                } catch {
+                    Write-Host "[!] Advertencia: No se pudo eliminar la carpeta '$folderName': $_" -ForegroundColor Yellow
+                }
             }
         }
     }
-}
 
-Write-Host ""
-Write-Host "La fase de extraccion y fusion ha finalizado correctamente." -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "La fase de extraccion y fusion ha finalizado correctamente." -ForegroundColor Cyan
+}
 
 # -------------------------------------------------------------------------
 # Aplicar archivos del parche (Copiar y reemplazar desde ./<version>/win hacia data/win)
