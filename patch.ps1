@@ -294,9 +294,41 @@ if (Test-Path $patchSourceDir) {
     $totalPatchFiles = $patchFiles.Count
     $copiedCount = 0
 
+    # Detectar la carpeta de revision de wrd_script que usa el juego instalado (003, 004, ..., 007).
+    # Se toma la de numero mas alto que contenga los scripts del juego (chap0.SPC), para ignorar
+    # carpetas que solo tengan textos copiados por una instalacion anterior del parche.
+    $wrdScriptDir = Join-Path $winDir "wrd_script"
+    $carpetaWrdJuego = $null
+    if (Test-Path $wrdScriptDir) {
+        $carpetaWrdJuego = Get-ChildItem -Path $wrdScriptDir -Directory |
+            Where-Object { $_.Name -match '^\d+$' -and (Test-Path (Join-Path $_.FullName "chap0.SPC")) } |
+            Sort-Object { [int]$_.Name } |
+            Select-Object -Last 1 -ExpandProperty Name
+    }
+
+    if ($carpetaWrdJuego) {
+        Write-Host "[+] Carpeta de dialogos detectada en el juego: wrd_script\$carpetaWrdJuego" -ForegroundColor Green
+    } else {
+        Write-Host "[!] No se detecto la carpeta de dialogos del juego; se usaran las rutas del parche tal cual." -ForegroundColor Yellow
+    }
+
     foreach ($file in $patchFiles) {
         # Obtener ruta relativa respecto a la carpeta 'win' del parche de la version elegida
         $relativePath = $file.FullName.Substring((Resolve-Path $patchSourceDir).Path.Length).TrimStart('\', '/')
+
+        # Redirigir los textos de wrd_script\<NNN>\ a la carpeta de revision que usa el juego
+        if ($carpetaWrdJuego -and $relativePath -match '^wrd_script[\\/]\d+[\\/](.+)$') {
+            $nombreArchivo = $Matches[1]
+            $relativePath = Join-Path (Join-Path "wrd_script" $carpetaWrdJuego) $nombreArchivo
+
+            # Respaldar el archivo original una sola vez antes de reemplazarlo
+            $archivoOriginal = Join-Path $winDir $relativePath
+            $respaldo = "$archivoOriginal.bak"
+            if ((Test-Path $archivoOriginal) -and -not (Test-Path $respaldo)) {
+                Copy-Item -Path $archivoOriginal -Destination $respaldo -Force
+            }
+        }
+
         $destinationFilePath = Join-Path $winDir $relativePath
         $destinationSubDir = Split-Path $destinationFilePath -Parent
 
