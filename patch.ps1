@@ -120,11 +120,11 @@ Write-Host ""
 
 # Seleccion de version del parche
 Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
-Write-Host "¿Deseas instalar la version más reciente ($versionActual)? [S/N]" -ForegroundColor Yellow
-Write-Host "  [S] Instalar version más reciente ($versionActual) - Puede contener errores del juego" -ForegroundColor DarkGray
-Write-Host "  [N] Instalar version base ($versionBase) - Estable pero con más errores de tipografía" -ForegroundColor DarkGray
+Write-Host "¿Deseas instalar la version mas reciente ($versionActual)? [S/N]" -ForegroundColor Yellow
+Write-Host "  [S] Instalar version mas reciente ($versionActual) - Puede contener errores del juego" -ForegroundColor DarkGray
+Write-Host "  [N] Instalar version base ($versionBase) - Estable pero con mas errores de tipografia" -ForegroundColor DarkGray
 Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
-$verInput = Read-Host "Opción (Por defecto: S)"
+$verInput = Read-Host "Opcion (Por defecto: S)"
 
 if ([string]::IsNullOrWhiteSpace($verInput) -or $verInput -match "^[sSyY]") {
     $versionSeleccionada = $carpetaActual
@@ -132,7 +132,7 @@ if ([string]::IsNullOrWhiteSpace($verInput) -or $verInput -match "^[sSyY]") {
     $versionSeleccionada = $versionBase
 }
 
-Write-Host "[+] Versión seleccionada para instalación: $versionSeleccionada" -ForegroundColor Green
+Write-Host "[+] Version seleccionada para instalacion: $versionSeleccionada" -ForegroundColor Green
 Write-Host ""
 
 # Lista de archivos CPK requeridos
