@@ -1,4 +1,11 @@
 # Script de instalacion para el parche de traduccion de Danganronpa V3: Killing Harmony.
+
+# -------------------------------------------------------------------------
+# Versiones del parche disponibles
+# -------------------------------------------------------------------------
+$versionActual   = "v1.2"   # Version mas reciente (carpeta del parche)
+$versionBase = "v0.1"   # Version anterior estable (carpeta del parche)
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -112,19 +119,19 @@ Write-Host ""
 
 # Seleccion de version del parche
 Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
-Write-Host "¿Deseas instalar la version mas reciente (v1.2)? [S/N]" -ForegroundColor Yellow
-Write-Host "  [S] Instalar version mas reciente (v1.2) - Sin probar" -ForegroundColor DarkGray
-Write-Host "  [N] Instalar version anterior (v0.1) - Estable con errores de texto" -ForegroundColor DarkGray
+Write-Host "¿Deseas instalar la version más reciente ($versionActual)? [S/N]" -ForegroundColor Yellow
+Write-Host "  [S] Instalar version más reciente ($versionActual) - Puede contener errores del juego" -ForegroundColor DarkGray
+Write-Host "  [N] Instalar version base ($versionBase) - Estable pero con más errores de tipografía" -ForegroundColor DarkGray
 Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
-$verInput = Read-Host "Opcion (Por defecto: S)"
+$verInput = Read-Host "Opción (Por defecto: S)"
 
 if ([string]::IsNullOrWhiteSpace($verInput) -or $verInput -match "^[sSyY]") {
-    $versionSeleccionada = "v1.2"
+    $versionSeleccionada = $versionActual
 } else {
-    $versionSeleccionada = "v0.1"
+    $versionSeleccionada = $versionBase
 }
 
-Write-Host "[+] Version seleccionada para instalacion: $versionSeleccionada" -ForegroundColor Green
+Write-Host "[+] Versión seleccionada para instalación: $versionSeleccionada" -ForegroundColor Green
 Write-Host ""
 
 # Lista de archivos CPK requeridos
@@ -320,11 +327,17 @@ if (Test-Path $patchSourceDir) {
         if ($carpetaWrdJuego -and $relativePath -match '^wrd_script[\\/]\d+[\\/](.+)$') {
             $nombreArchivo = $Matches[1]
             $relativePath = Join-Path (Join-Path "wrd_script" $carpetaWrdJuego) $nombreArchivo
+        }
 
-            # Respaldar el archivo original una sola vez antes de reemplazarlo
-            $archivoOriginal = Join-Path $winDir $relativePath
-            $respaldo = "$archivoOriginal.bak"
-            if ((Test-Path $archivoOriginal) -and -not (Test-Path $respaldo)) {
+        # Respaldar el archivo original una sola vez en backup_en\ (al mismo nivel que las carpetas de version)
+        $archivoOriginal = Join-Path $winDir $relativePath
+        if (Test-Path $archivoOriginal) {
+            $respaldo = Join-Path $PSScriptRoot (Join-Path "backup_en" $relativePath)
+            if (-not (Test-Path $respaldo)) {
+                $respaldoDir = Split-Path $respaldo -Parent
+                if (-not (Test-Path $respaldoDir)) {
+                    New-Item -ItemType Directory -Path $respaldoDir -Force | Out-Null
+                }
                 Copy-Item -Path $archivoOriginal -Destination $respaldo -Force
             }
         }
