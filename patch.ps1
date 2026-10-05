@@ -3,8 +3,9 @@
 # -------------------------------------------------------------------------
 # Versiones del parche disponibles
 # -------------------------------------------------------------------------
-$versionActual   = "v1.2"   # Version mas reciente (carpeta del parche)
-$versionBase = "v0.1"   # Version anterior estable (carpeta del parche)
+$versionActual   = "v1.3"   # Numero de version mas reciente (solo para mostrar)
+$carpetaActual   = "latest" # Carpeta del parche para la version mas reciente
+$versionBase     = "v0.1"   # Version anterior estable (nombre de carpeta y version)
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -126,7 +127,7 @@ Write-Host "------------------------------------------------------------" -Foreg
 $verInput = Read-Host "Opción (Por defecto: S)"
 
 if ([string]::IsNullOrWhiteSpace($verInput) -or $verInput -match "^[sSyY]") {
-    $versionSeleccionada = $versionActual
+    $versionSeleccionada = $carpetaActual
 } else {
     $versionSeleccionada = $versionBase
 }
