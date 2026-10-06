@@ -1,7 +1,11 @@
 ﻿# Herramientas de dialogos
+check_punctuation.py
 dialog_tool.bat
 dialog_tool.ps1
 fix_clt_spaces.py
+punctuation_editor.py
+folders.txt
+my_report.log
 
 # Carpeta de trabajo temporal (generada por dialog_tool)
 dialog_work/
