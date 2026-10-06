@@ -1,0 +1,13 @@
+﻿# Herramientas de dialogos
+dialog_tool.bat
+dialog_tool.ps1
+fix_clt_spaces.py
+
+# Carpeta de trabajo temporal (generada por dialog_tool)
+dialog_work/
+
+# VSCode
+.vscode/
+
+# Logs generados por fix_clt_spaces
+dialog_work/logs/

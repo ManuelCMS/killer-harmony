@@ -1,4 +1,12 @@
 # Script de instalacion para el parche de traduccion de Danganronpa V3: Killing Harmony.
+
+# -------------------------------------------------------------------------
+# Versiones del parche disponibles
+# -------------------------------------------------------------------------
+$versionActual   = "v1.3"   # Numero de version mas reciente (solo para mostrar)
+$carpetaActual   = "latest" # Carpeta del parche para la version mas reciente
+$versionBase     = "v0.1"   # Version anterior estable (nombre de carpeta y version)
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -112,16 +120,16 @@ Write-Host ""
 
 # Seleccion de version del parche
 Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
-Write-Host "¿Deseas instalar la version mas reciente (v1.2)? [S/N]" -ForegroundColor Yellow
-Write-Host "  [S] Instalar version mas reciente (v1.2) - Sin probar" -ForegroundColor DarkGray
-Write-Host "  [N] Instalar version anterior (v0.1) - Estable con errores de texto" -ForegroundColor DarkGray
+Write-Host "¿Deseas instalar la version mas reciente ($versionActual)? [S/N]" -ForegroundColor Yellow
+Write-Host "  [S] Instalar version mas reciente ($versionActual) - Puede contener errores del juego" -ForegroundColor DarkGray
+Write-Host "  [N] Instalar version base ($versionBase) - Estable pero con mas errores de tipografia" -ForegroundColor DarkGray
 Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
 $verInput = Read-Host "Opcion (Por defecto: S)"
 
 if ([string]::IsNullOrWhiteSpace($verInput) -or $verInput -match "^[sSyY]") {
-    $versionSeleccionada = "v1.2"
+    $versionSeleccionada = $carpetaActual
 } else {
-    $versionSeleccionada = "v0.1"
+    $versionSeleccionada = $versionBase
 }
 
 Write-Host "[+] Version seleccionada para instalacion: $versionSeleccionada" -ForegroundColor Green
@@ -294,9 +302,47 @@ if (Test-Path $patchSourceDir) {
     $totalPatchFiles = $patchFiles.Count
     $copiedCount = 0
 
+    # Detectar la carpeta de revision de wrd_script que usa el juego instalado (003, 004, ..., 007).
+    # Se toma la de numero mas alto que contenga los scripts del juego (chap0.SPC), para ignorar
+    # carpetas que solo tengan textos copiados por una instalacion anterior del parche.
+    $wrdScriptDir = Join-Path $winDir "wrd_script"
+    $carpetaWrdJuego = $null
+    if (Test-Path $wrdScriptDir) {
+        $carpetaWrdJuego = Get-ChildItem -Path $wrdScriptDir -Directory |
+            Where-Object { $_.Name -match '^\d+$' -and (Test-Path (Join-Path $_.FullName "chap0.SPC")) } |
+            Sort-Object { [int]$_.Name } |
+            Select-Object -Last 1 -ExpandProperty Name
+    }
+
+    if ($carpetaWrdJuego) {
+        Write-Host "[+] Carpeta de dialogos detectada en el juego: wrd_script\$carpetaWrdJuego" -ForegroundColor Green
+    } else {
+        Write-Host "[!] No se detecto la carpeta de dialogos del juego; se usaran las rutas del parche tal cual." -ForegroundColor Yellow
+    }
+
     foreach ($file in $patchFiles) {
         # Obtener ruta relativa respecto a la carpeta 'win' del parche de la version elegida
         $relativePath = $file.FullName.Substring((Resolve-Path $patchSourceDir).Path.Length).TrimStart('\', '/')
+
+        # Redirigir los textos de wrd_script\<NNN>\ a la carpeta de revision que usa el juego
+        if ($carpetaWrdJuego -and $relativePath -match '^wrd_script[\\/]\d+[\\/](.+)$') {
+            $nombreArchivo = $Matches[1]
+            $relativePath = Join-Path (Join-Path "wrd_script" $carpetaWrdJuego) $nombreArchivo
+        }
+
+        # Respaldar el archivo original una sola vez en backup_en\ (al mismo nivel que las carpetas de version)
+        $archivoOriginal = Join-Path $winDir $relativePath
+        if (Test-Path $archivoOriginal) {
+            $respaldo = Join-Path $PSScriptRoot (Join-Path "backup_en" $relativePath)
+            if (-not (Test-Path $respaldo)) {
+                $respaldoDir = Split-Path $respaldo -Parent
+                if (-not (Test-Path $respaldoDir)) {
+                    New-Item -ItemType Directory -Path $respaldoDir -Force | Out-Null
+                }
+                Copy-Item -Path $archivoOriginal -Destination $respaldo -Force
+            }
+        }
+
         $destinationFilePath = Join-Path $winDir $relativePath
         $destinationSubDir = Split-Path $destinationFilePath -Parent
 
