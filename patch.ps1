@@ -3,7 +3,7 @@
 # -------------------------------------------------------------------------
 # Versiones del parche disponibles
 # -------------------------------------------------------------------------
-$versionActual   = "v2.3"   # Numero de version mas reciente (solo para mostrar)
+$versionActual   = "v2.4"   # Numero de version mas reciente (solo para mostrar)
 $carpetaActual   = "latest" # Carpeta del parche para la version mas reciente
 $versionBase     = "v0.1"   # Version anterior estable (nombre de carpeta y version)
 
