@@ -1,4 +1,4 @@
-# Parche de Traducción al Español - Danganronpa V3: Killing Harmony v2.3
+# Parche de Traducción al Español - Danganronpa V3: Killing Harmony v2.4
 
 Este repositorio contiene el script de instalación automática y los archivos correspondientes al parche de traducción al español para **Danganronpa V3: Killing Harmony** (versión de PC). 
 
