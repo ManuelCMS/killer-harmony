@@ -6,6 +6,7 @@ fix_clt_spaces.py
 punctuation_editor.py
 folders.txt
 my_report.log
+missing_lines/*
 
 # Carpeta de trabajo temporal (generada por dialog_tool)
 dialog_work/
